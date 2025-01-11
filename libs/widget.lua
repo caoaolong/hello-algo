@@ -12,9 +12,28 @@ ACTTC = { 1, 1, 1 }
 TCHTC = { 0, .48, .96 }
 
 -- state: d: default; a: active; t: touch
-function widget.button(x, y, label)
-    button = { _type = "button", _x = x, _y = y, _w = BTNSZ.w, _h = BTNSZ.h, _label = label, x = 0, y = 0, state = 'd' }
+function widget.button(x, y, label, action, arg)
+    button = { 
+        _type = "button", 
+        _x = x, _y = y, _w = BTNSZ.w, _h = BTNSZ.h, _label = label, x = 0, y = 0, 
+        state = 'd',
+        action = action, arg = arg
+    }
     return button
+end
+
+function widget.box(color, x, y, w, h)
+    if x == nil or y == nil then
+        x, y = 0, 0
+    end
+    if w == nil or h == nil then
+        w, h = love.graphics.getDimensions()
+    end
+    local box = {
+        _type = "box",
+        _x = x, _y = y, _w = w, _h = h, _c = color
+    }
+    return box
 end
 
 function widget.draw(widgets)
@@ -22,7 +41,9 @@ function widget.draw(widgets)
     local font = love.graphics.getFont()
     for index, value in ipairs(widgets) do
         if value._type == "button" then -- 绘制按钮
-            widget.drawButton(button, font, w, h)
+            widget.drawButton(value, font, w, h)
+        elseif value._type == "box" then
+            widget.drawBox(value) -- 绘制盒子
         end
     end
 end
@@ -50,6 +71,10 @@ function widget.drawButton(button, font, w, h)
     love.graphics.setColor(color[1], color[2], color[3])
     love.graphics.rectangle("line", bx, by, BTNSZ.w, BTNSZ.h, BTNSZ.r)
     love.graphics.print(button._label, tx, ty)
+end
+
+function widget.drawBox(box)
+    love.graphics.setColor()
 end
 
 return widget
