@@ -9,21 +9,10 @@ function widget.button(x, y, label, action, arg, value)
     return object
 end
 
-function widget.box(color, x, y, w, h, r)
-    if x == nil or y == nil then
-        x, y = 0, 0
-    end
-    if w == nil or h == nil then
-        w, h = love.graphics.getDimensions()
-    end
-    if r == nil then
-        r = 8
-    end
-    local box = {
-        _type = "box",
-        _x = x, _y = y, _w = w, _h = h, _r = r, _c = color
-    }
-    return box
+function widget.box(w, h, color, x, y)
+    local box = require("libs.widgets.box")
+    local object = box:new(w, h, color, x, y)
+    return object
 end
 
 function widget.table(padding, cs, rs, fs)
@@ -33,11 +22,10 @@ function widget.table(padding, cs, rs, fs)
     return object
 end
 
-function widget.draw(widgets)
-    local w, h = love.graphics.getDimensions()
+function widget.draw(widgets, w, h)
     local font = love.graphics.getFont()
     for index, value in ipairs(widgets) do
-        value:draw()
+        value:draw(w, h)
     end
 end
 

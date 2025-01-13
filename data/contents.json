@@ -4,7 +4,11 @@
         "scene": "ac"
     },
     {
-        "name": "数据结构",
-        "scene": "ac"
+        "name": "数据结构基础",
+        "scene": "struct"
+    },
+    {
+        "name": "线性结构",
+        "scene": "struct"
     }
 ]

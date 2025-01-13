@@ -1,16 +1,13 @@
 widget = require("libs.widget")
 event = require("libs.event")
 
-scene = {}
-widgets = {}
+TIMER = 30
 
-function scene.init()
-    loadingFromTimer = 0
-end
+scene = { lft = 0, ltt = TIMER, children = {} }
 
 function scene.start(s)
     if s == "menu" then
-        widgets = {
+        scene.children = {
             widget.button(-100, 200, "目录", event.load, scene, "contents"),
             widget.button(100, 200, "退出", event.exit)
         }
@@ -25,41 +22,41 @@ function scene.start(s)
             return
         end
         for index, value in ipairs(data) do
-            local r, c = math.floor(index / table.cs), index % table.cs - 1
+            local idx = index - 1
+            local r, c = math.floor(idx / table.cs), idx % table.cs
             table:add(r, c, widget.button(0, 0, index .. "." .. value.name, event.load, scene, value.scene))
         end
-        widgets = { table }
+        scene.children = { table }
+    else
+        local w, h = love.graphics.getDimensions()
+        scene.children = { widget.box(w, h) }
     end
 end
 
-TIMER = 30
-loadingFromTimer = TIMER
-loadingToTimer = TIMER
-
 function scene.draw()
     w, h = love.graphics.getDimensions()
-    if loadingFromTimer > 0 then
-        love.graphics.setColor(0, 0, 0, 1 - (loadingFromTimer / TIMER))
+    if scene.lft > 0 then
+        love.graphics.setColor(.18, .18, .18, 1 - (scene.lft / TIMER))
         love.graphics.rectangle("fill", 0, 0, w, h)
-        loadingFromTimer = loadingFromTimer - 1
+        scene.lft = scene.lft - 1
         return
     end
     love.graphics.setColor(1, 1, 1)
-    widget.draw(widgets)
-    if loadingToTimer > 0 then
-        love.graphics.setColor(0, 0, 0, loadingToTimer / TIMER)
+    widget.draw(scene.children, w, h)
+    if scene.ltt > 0 then
+        love.graphics.setColor(.18, .18, .18, scene.ltt / TIMER)
         love.graphics.rectangle("fill", 0, 0, w, h)
-        loadingToTimer = loadingToTimer - 1
+        scene.ltt = scene.ltt - 1
     end
 end
 
 function scene.widgets()
-    return widgets
+    return scene.children
 end
 
 function scene.load()
-    loadingFromTimer = TIMER
-    loadingToTimer = TIMER
+    scene.lft = TIMER
+    scene.ltt = TIMER
 end
 
 return scene
