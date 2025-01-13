@@ -9,7 +9,7 @@ function love.load()
     -- 初始化场景
     scene.init()
     -- 加载场景
-    scene.menu()
+    scene.start("menu")
 end
 
 function love.resize(w, h)
@@ -34,7 +34,7 @@ function love.mousereleased(x, y, button, istouch, presses)
         if value.state == 't' and button == 1 then
             value.state = 'a'
             if value._type == 'button' then
-                value.action(value.arg)
+                value.action(value.arg, value.value)
             end
         end
     end
@@ -42,18 +42,22 @@ end
 
 function love.mousemoved(x, y, dx, dy, istouch)
     for index, value in ipairs(scene.widgets()) do
-        local rx, ry = value.x + value._w, value.y + value._h
-        if x >= value.x and x <= rx and y >= value.y and y <= ry then
-            love.mouse.setCursor(love.mouse.getSystemCursor("hand"))
-            if love.mouse.isDown(1) then
-                value.state = 't'
+        if value._type == "button" then
+            local rx, ry = value._x + value._w, value._y + value._h
+            if x >= value._x and x <= rx and y >= value._y and y <= ry then
+                love.mouse.setCursor(love.mouse.getSystemCursor("hand"))
+                if love.mouse.isDown(1) then
+                    value.state = 't'
+                else
+                    value.state = 'a'
+                end
+                return
             else
-                value.state = 'a'
+                love.mouse.setCursor(love.mouse.getSystemCursor("arrow"))
+                value.state = 'd'
             end
-            return
         else
             love.mouse.setCursor(love.mouse.getSystemCursor("arrow"))
-            value.state = 'd'
         end
     end
 end
