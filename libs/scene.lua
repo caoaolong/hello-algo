@@ -1,4 +1,5 @@
 widget = require("libs.widget")
+shape = require("libs.shape")
 event = require("libs.event")
 
 TIMER = 30
@@ -27,9 +28,8 @@ function scene.start(s)
             table:add(r, c, widget.button(0, 0, index .. "." .. value.name, event.load, scene, value.scene))
         end
         scene.children = { table }
-    else
-        local w, h = love.graphics.getDimensions()
-        scene.children = { widget.box(w, h) }
+    elseif s == "ac" then
+        scene.children = { widget.box(), shape.axis() }
     end
 end
 

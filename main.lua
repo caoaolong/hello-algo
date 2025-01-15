@@ -7,7 +7,7 @@ function love.load()
     imgBg = love.graphics.newImage("images/bg.png")
     love.graphics.setFont(love.graphics.newFont("ui.ttf", 34))
     -- 加载场景
-    scene.start("menu")
+    scene.start("ac")
 end
 
 function love.resize(w, h)
