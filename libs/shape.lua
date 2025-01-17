@@ -1,8 +1,8 @@
 shape = {}
 
-function shape.axis()
+function shape.axis(center)
     local axis = require("libs.shapes.axis")
-    local object = axis:new()
+    local object = axis:new(center)
     return object
 end
 

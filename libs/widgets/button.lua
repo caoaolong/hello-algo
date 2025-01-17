@@ -1,6 +1,6 @@
 button = {
     _type = "button", _w = 160, _h = 50, _r = 8, state = 'd',
-    _x = 0, _y = 0
+    _x = 0, _y = 0, _rw = 1, _rh = 1
 }
 button.__index = button
 

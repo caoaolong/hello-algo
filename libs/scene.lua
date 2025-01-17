@@ -29,7 +29,11 @@ function scene.start(s)
         end
         scene.children = { table }
     elseif s == "ac" then
-        scene.children = { widget.box(), shape.axis() }
+        local bg = widget.box()
+        local canvas = widget.box(1, .9, {.12, .12, .12})
+        canvas:add(shape.axis("lb"))
+        bg:add(canvas)
+        scene.children = { bg }
     end
 end
 

@@ -1,13 +1,12 @@
-grid = { children = {}, _type = "table", spaceX = 10, spaceY = 5 }
+grid = { _type = "table", spaceX = 10, spaceY = 5, _rw = 1, _rh = 1 }
 grid.__index = grid
 
 function grid:new(padding, cs, rs, fs)
     fs = fs or 18
-    local object = setmetatable({}, grid)
-    object.font = love.graphics.newFont("ui.ttf", fs)
-    object.padding = padding
-    object.cs = cs
-    object.rs = rs
+    local object = setmetatable({ 
+        children = {}, font = love.graphics.newFont("ui.ttf", fs),
+        padding = padding, cs = cs, rs = rs
+    }, grid)
     return object
 end
 
