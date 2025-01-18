@@ -1,12 +1,11 @@
 widget = require("libs.widget")
-shape = require("libs.shape")
 event = require("libs.event")
-
 TIMER = 30
 
-scene = { lft = 0, ltt = TIMER, children = {} }
+scene = { lft = 0, ltt = TIMER, children = {}, name = "cs", now = "" }
 
 function scene.start(s)
+    scene.now = s
     if s == "menu" then
         scene.children = {
             widget.button(-100, 200, "目录", event.load, scene, "contents"),
@@ -28,12 +27,9 @@ function scene.start(s)
             table:add(r, c, widget.button(0, 0, index .. "." .. value.name, event.load, scene, value.scene))
         end
         scene.children = { table }
-    elseif s == "ac" then
-        local bg = widget.box()
-        local canvas = widget.box(1, .9, {.12, .12, .12})
-        canvas:add(shape.axis("lb"))
-        bg:add(canvas)
-        scene.children = { bg }
+    else
+        scene.name = "suit"
+        love.graphics.setFont(love.graphics.newFont("ui.ttf", 18))
     end
 end
 

@@ -1,7 +1,6 @@
 win = require("libs.window")
 scene = require("libs.scene")
-
-widgets = {}
+suits = require("libs.suits")
 
 function love.load()
     imgBg = love.graphics.newImage("images/bg.png")
@@ -15,9 +14,23 @@ function love.resize(w, h)
     scene.draw()
 end
 
+-- local r, g, b, a = love.graphics.getColor()
+-- love.graphics.setColor(.18, .18, .18)
+-- love.graphics.rectangle("fill", 0, 0, w, h)
+-- love.graphics.setColor(r, g, b, a)
+-- suit.draw()
+
+function love.update()
+    suits[scene.now]()
+end
+
 function love.draw()
     win.resize(imgBg)
-    scene.draw()
+    if scene.name == "cs" then
+        scene.draw()
+    elseif scene.name == "suit" then
+        suits.draw()
+    end
 end
 
 function love.mousepressed(x, y, button, istouch, presses)
