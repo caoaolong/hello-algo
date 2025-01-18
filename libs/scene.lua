@@ -1,5 +1,6 @@
 widget = require("libs.widget")
 event = require("libs.event")
+strings = require("utils.string")
 TIMER = 30
 
 scene = { lft = 0, ltt = TIMER, children = {}, name = "cs", now = "" }
@@ -27,9 +28,13 @@ function scene.start(s)
             table:add(r, c, widget.button(0, 0, index .. "." .. value.name, event.load, scene, value.scene))
         end
         scene.children = { table }
-    else
+    elseif strings.startsWith(s, "suit_") then
         scene.name = "suit"
+        scene.now = string.gsub(s, "suit_", "")
         love.graphics.setFont(love.graphics.newFont("ui.ttf", 18))
+    elseif strings.startsWith(s, "ui2d_") then
+        scene.name = "ui2d"
+        scene.now = string.gsub(s, "ui2d_", "")
     end
 end
 

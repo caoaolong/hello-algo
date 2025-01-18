@@ -10,4 +10,8 @@ function window.resize(bg, w, h)
     love.graphics.draw(bg, 0, 0, 0, rw, rh)
 end
 
+function window.suit()
+    love.graphics.clear( .12, .12, .12 )
+end
+
 return window
