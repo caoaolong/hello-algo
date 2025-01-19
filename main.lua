@@ -38,7 +38,8 @@ function love.draw()
         win.suit()
         suits.draw()
     elseif scene.name == "ui2d" then
-        ui2ds[scene.now]()
+        win.ui2d()
+        ui2ds.draw(scene.now)
     end
 end
 
@@ -55,13 +56,17 @@ function love.mousereleased(x, y, button, istouch, presses)
 end
 
 function love.mousemoved(x, y, dx, dy, istouch)
-    for index, value in ipairs(scene.widgets()) do
-        if value:moved(x, y, dx, dy, istouch) then
-            love.mouse.setCursor(love.mouse.getSystemCursor("hand"))
-            return
-        else
-            love.mouse.setCursor(love.mouse.getSystemCursor("arrow"))
+    if scene.name == "sc" then
+        for index, value in ipairs(scene.widgets()) do
+            if value:moved(x, y, dx, dy, istouch) then
+                love.mouse.setCursor(love.mouse.getSystemCursor("hand"))
+                return
+            else
+                love.mouse.setCursor(love.mouse.getSystemCursor("arrow"))
+            end
         end
+    elseif scene.name == "ui2d" then
+        ui2ds.mousemoved(x, y, dx, dy, istouch)
     end
 end
 

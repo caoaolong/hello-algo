@@ -23,7 +23,6 @@ function widget.table(padding, cs, rs, fs)
 end
 
 function widget.draw(widgets, w, h)
-    local font = love.graphics.getFont()
     for index, value in ipairs(widgets) do
         value:draw(w, h)
     end

@@ -14,4 +14,8 @@ function window.suit()
     love.graphics.clear( .12, .12, .12 )
 end
 
+function window.ui2d()
+    love.graphics.clear( .12, .12, .12 )
+end
+
 return window
