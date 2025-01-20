@@ -35,4 +35,16 @@ function ui2ds.mousemoved(x, y, dx, dy, istouch)
     end
 end
 
+function ui2ds.mousepressed(x, y, button, istouch, presses)
+    if ui2ds.sc ~= nil then
+        ui2ds.sc.mousepressed(x, y, button, istouch, presses)
+    end
+end
+
+function ui2ds.mousereleased(x, y, button, istouch, presses)
+    if ui2ds.sc ~= nil then
+        ui2ds.sc.mousereleased(x, y, button, istouch, presses)
+    end
+end
+
 return ui2ds

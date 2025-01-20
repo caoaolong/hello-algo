@@ -1,5 +1,5 @@
 scenes = {
-    ac = require("scenes.ac")
+    array = require("scenes.array")
 }
 
 return scenes

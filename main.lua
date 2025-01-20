@@ -9,7 +9,7 @@ function love.load()
     -- UI2D初始化
     ui2ds.init()
     -- 加载场景
-    scene.start("ui2d_ac")
+    scene.start("ui2d_array")
 end
 
 function love.resize(w, h)
@@ -44,14 +44,22 @@ function love.draw()
 end
 
 function love.mousepressed(x, y, button, istouch, presses)
-    for index, value in ipairs(scene.widgets()) do
-        value:pressed(x, y, button, istouch, presses)
+    if scene.name == "cs" then
+        for index, value in ipairs(scene.widgets()) do
+            value:pressed(x, y, button, istouch, presses)
+        end
+    elseif scene.name == "ui2d" then
+        ui2ds.mousepressed(x, y, button, istouch, presses)
     end
 end
 
 function love.mousereleased(x, y, button, istouch, presses)
-    for index, value in ipairs(scene.widgets()) do
-        value:released(x, y, button, istouch, presses)
+    if scene.name == "cs" then
+        for index, value in ipairs(scene.widgets()) do
+            value:released(x, y, button, istouch, presses)
+        end
+    elseif scene.name == "ui2d" then
+        ui2ds.mousereleased(x, y, button, istouch, presses)
     end
 end
 
