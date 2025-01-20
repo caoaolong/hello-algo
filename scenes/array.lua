@@ -1,4 +1,4 @@
-array_scene = { widgets = {} }
+array_scene = { widgets = {}, order = "lt" }
 array_scene.__index = array_scene
 
 function array_scene.init()
@@ -12,11 +12,20 @@ function array_scene.draw()
         value:draw(w, h)
     end
     UI2D.Begin( "Toolbar", 0, 0 )
-    if UI2D.Button( "Next Step" ) then
-        print( "from Next Step" )
+    if UI2D.RadioButton("ASC ", array_scene.order == "lt", "Ascending") then
+        array_scene.order = "lt"
     end
-    if UI2D.Button( "Auto Play" ) then
-        print( "from Auto Play" )
+    UI2D.SameLine()
+    if UI2D.RadioButton("DESC", array_scene.order == "gt", "Descending") then
+        array_scene.order = "gt"
+    end
+    array_scene.widgets[1]:order(array_scene.order)
+    if UI2D.Button( "  Clear  " ) then
+        array_scene.widgets[1]:clear()
+    end
+    UI2D.SameLine()
+    if UI2D.Button( "  Create  " ) then
+        array_scene.widgets[1]:create()
     end
     UI2D.End()
     UI2D.RenderFrame()

@@ -5,7 +5,8 @@ array = {
     _drag_color = {0, .6, .3},
     _drop_color = {1, .2, .2},
     _right_color = {.6, .6, 0},
-    drag = nil, drop = nil, draging = {}
+    drag = nil, drop = nil, draging = {},
+    _order = "lt"
 }
 array.__index = array
 
@@ -49,7 +50,7 @@ function array:draw(w, h)
         end
         if index > 1 then
             local last = self.nodes[index - 1]
-            last.right = last.value > value.value
+            last.right = self:compare(last, value)
             value.right = last.right
         end
         local color = nil
@@ -90,14 +91,56 @@ function array:draw(w, h)
         local lw, lh = f:getWidth(value), f:getHeight(value)
         local ly = (h - lh) * 0.4
         if index == 1 then
-            love.graphics.print("+------+--------------------+--------------------+", (w - lw) / 2, ly + (index - 3) * lh)
-            love.graphics.print("| Opt  |       From         |         To         |", (w - lw) / 2, ly + (index - 2) * lh)
-            love.graphics.print("+------+--------------------+--------------------+", (w - lw) / 2, ly + (index - 1) * lh)
+            love.graphics.print("┌──────┬────────────────────┬────────────────────┐", (w - lw) / 2, ly + (index - 3) * lh)
+            love.graphics.print("│ Opt  │       From         │         To         │", (w - lw) / 2, ly + (index - 2) * lh)
+            love.graphics.print("├──────┼────────────────────┼────────────────────┤", (w - lw) / 2, ly + (index - 1) * lh)
         end
         love.graphics.print(value, (w - lw) / 2, ly + (index * 2 - 1) * lh)
-        love.graphics.print("+------+--------------------+--------------------+", (w - lw) / 2, ly + index * 2 * lh)
+        if index == #self.logs then
+            love.graphics.print("└──────┴────────────────────┴────────────────────┘", (w - lw) / 2, ly + index * 2 * lh)
+        else
+            love.graphics.print("├──────┴────────────────────┴────────────────────┤", (w - lw) / 2, ly + index * 2 * lh)
+        end
     end
     love.graphics.setColor(r, g, b, a)
+end
+
+function array:clear()
+    self.nodes = {}
+    self.logs = {}
+end
+
+function array:order(type)
+    if type == "lt" or type == "gt" then
+        self._order = type
+    end
+end
+
+function array:compare(v1, v2)
+    if self._order == "lt" then
+        return v1.value < v2.value
+    end
+
+    if self._order == "gt" then
+        return v1.value > v2.value
+    end
+end
+
+function array:create()
+    self:clear()
+    math.randomseed(os.time())
+    local f = love.graphics.getFont()
+    for i = 1, 10 do
+        local value = math.random(1, 100)
+        local text = value
+        if f:getWidth(text) > self._cell then
+            text = "..."
+        end
+        table.insert(self.nodes, {
+            x = 0, y = 0, tx = 0, ty = 0,
+            text = text, value = value, state = "d", right = false
+        })
+    end
 end
 
 function array:mousemoved(x, y, dx, dy, istouch)
