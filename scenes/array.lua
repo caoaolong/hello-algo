@@ -1,4 +1,4 @@
-array_scene = { widgets = {}, order = "lt" }
+array_scene = { widgets = {}, order = "lt", size = 5 }
 array_scene.__index = array_scene
 
 function array_scene.init()
@@ -19,9 +19,14 @@ function array_scene.draw()
     if UI2D.RadioButton("DESC", array_scene.order == "gt", "Descending") then
         array_scene.order = "gt"
     end
+    local value = UI2D.SliderInt("Count", array_scene.size, 2, 10, 0, "Array Size")
+    if value ~= array_scene.size then
+        array_scene.size = value
+        array_scene.widgets[1]:resize(value)
+    end
     array_scene.widgets[1]:order(array_scene.order)
-    if UI2D.Button( "  Clear  " ) then
-        array_scene.widgets[1]:clear()
+    if UI2D.Button( "  Reset  " ) then
+        array_scene.widgets[1]:reset()
     end
     UI2D.SameLine()
     if UI2D.Button( "  Create  " ) then

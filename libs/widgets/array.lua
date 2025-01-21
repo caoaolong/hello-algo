@@ -8,7 +8,7 @@ array = {
     _drop_color = {1, .2, .2},
     _right_color = {.6, .6, 0},
     drag = nil, drop = nil, draging = {},
-    moving = false, timer = 0, _timer = 0, mns = {}, as = 1,
+    moving = false, timer = 0, _timer = 0, mns = {}, as = 1, size = 5,
     _order = "lt"
 }
 array.__index = array
@@ -16,33 +16,23 @@ array.__index = array
 function array:new(...)
     local w, h = love.graphics.getDimensions()
     local f = love.graphics.getFont()
-    local values = {...}
     local object = setmetatable({
-        tooltip = nil, nodes = {}, logs = {}
+        tooltip = nil, nodes = {}, logs = {}, defaults = {...}
     }, array)
-    for index, value in ipairs(values) do
-        local tw, th = f:getWidth(value), f:getHeight(value)
-        local text = value
-        if tw > self._cell then
-            text = "..."
-        end
-        table.insert(object.nodes, {
-            x = 0, y = 0, tx = 0, ty = 0, _x = 0, _y = 0, _tx = 0, _ty = 0,
-            text = text, value = value, state = "d", right = false
-        })
-    end
+    object:reset()
     return object
 end
 
 function array:drawarray(cw, ch, f)
     for index, value in ipairs(self.nodes) do
-        if value == self.drag or value == self.drop or tb.contains(self.mns, value) then
+        if value == self.drag or tb.contains(self.mns, value) then
             goto continue
         end
         if index > 1 then
             local last = self.nodes[index - 1]
-            last.right = self:compare(last, value)
-            value.right = last.right
+            value.right = self:compare(last, value) and last.right
+        else
+            value.right = true
         end
         value.x, value.y = cw + (index - 1) * (self._cell + self._space), ch
         value._x, value._y = value.x, value.y
@@ -80,6 +70,7 @@ function array:drawanim()
         local src = self.mns[1]
         local dst = self.mns[2]
         local ts = self._timer - self.timer
+        print(self.timer)
         if self.as == 1 then
             src.x = src._x
             src.tx = src._tx
@@ -89,7 +80,7 @@ function array:drawanim()
             dst.tx = dst._tx
             dst.y = dst._y - (self._cell / self._timer * ts)
             dst.ty = dst._ty - (self._cell / self._timer * ts)
-            if self.timer == 0 then
+            if self.timer <= 0 then
                 src._y, dst._y = src.y, dst.y
                 src._ty, dst._ty = src.ty, dst.ty
                 self.as = 2
@@ -102,7 +93,7 @@ function array:drawanim()
             src.tx = src._tx + ((dst._tx - src._tx) / self._timer * ts)
             dst.x = dst._x + ((src._x - dst._x) / self._timer * ts)
             dst.tx = dst._tx + ((src._tx - dst._tx) / self._timer * ts)
-            if self.timer == 0 then
+            if self.timer <= 0 then
                 dst._x, src._x = src._x, dst._x
                 dst._tx, src._tx = src._tx, dst._tx
                 self.as = 3
@@ -119,7 +110,7 @@ function array:drawanim()
             dst.tx = dst._tx
             dst.y = dst._y + (self._cell / self._timer * ts)
             dst.ty = dst._ty + (self._cell / self._timer * ts)
-            if self.timer == 0 then
+            if self.timer <= 0 then
                 self.as = 1
                 self:doswap()
                 self.moving = false
@@ -152,7 +143,7 @@ end
 function array:drawlogs(w, h, f)
     for index, value in ipairs(self.logs) do
         local lw, lh = f:getWidth(value), f:getHeight(value)
-        local ly = (h - lh) * 0.4
+        local ly = (h - lh) * 0.5
         if index == 1 then
             love.graphics.print("┌──────┬────────────────────┬────────────────────┐", (w - lw) / 2, ly + (index - 3) * lh)
             love.graphics.print("│ Opt  │       From         │         To         │", (w - lw) / 2, ly + (index - 2) * lh)
@@ -187,6 +178,22 @@ function array:draw(w, h)
     love.graphics.setColor(r, g, b, a)
 end
 
+function array:reset()
+    self:clear()
+    local f = love.graphics.getFont()
+    for index, value in ipairs(self.defaults) do
+        local tw, th = f:getWidth(value), f:getHeight(value)
+        local text = value
+        if tw > self._cell then
+            text = "..."
+        end
+        table.insert(self.nodes, {
+            x = 0, y = 0, tx = 0, ty = 0, _x = 0, _y = 0, _tx = 0, _ty = 0,
+            text = text, value = value, state = "d", right = false
+        })
+    end
+end
+
 function array:clear()
     self.nodes = {}
     self.logs = {}
@@ -208,21 +215,28 @@ function array:compare(v1, v2)
     end
 end
 
+function array:resize(size)
+    self.size = size
+end
+
 function array:create()
     self:clear()
     math.randomseed(os.time())
     local f = love.graphics.getFont()
-    for i = 1, 10 do
+    local values = {}
+    for i = 1, self.size do
         local value = math.random(1, 100)
         local text = value
         if f:getWidth(text) > self._cell then
             text = "..."
         end
+        table.insert(values, value)
         table.insert(self.nodes, {
             x = 0, y = 0, tx = 0, ty = 0,
             text = text, value = value, state = "d", right = false
         })
     end
+    self.defaults = values
 end
 
 function array:mousemoved(x, y, dx, dy, istouch)
@@ -281,7 +295,7 @@ end
 
 function array:swap()
     self.moving = true
-    self._timer = math.abs(self.drag._x - self.drop._x) / 2
+    self._timer = math.floor(math.abs(self.drag._x - self.drop._x) / 4)
     self.timer = self._timer
 end
 
