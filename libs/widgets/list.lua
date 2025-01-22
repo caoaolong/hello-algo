@@ -2,7 +2,8 @@ list = {
     _type = "list", _radius = 28,
     _default_color = {0, .4, .4}, 
     _active_color = {.06, .66, .7},
-    _select_color = {0, .6, .3}
+    _select_color = {0, .6, .3},
+    _drag_color = {1, .2, .2}
 }
 list.__index = list
 
@@ -10,12 +11,7 @@ function list:new()
     local object = setmetatable({
         nodes = {}
     }, list)
-    table.insert(object.nodes, {
-        text = "Null", value = nil,
-        x = 0, y = 0, _x = 0, _y = 0,
-        tx = 0, ty = 0, _tx = 0, _ty = 0,
-        state = "d"
-    })
+    object:reset()
     return object
 end
 
@@ -23,24 +19,39 @@ function list:append(v)
 
 end
 
+function list:reset()
+    table.insert(self.nodes, {
+        text = "Null", value = nil,
+        x = 0, y = 0, _x = 0, _y = 0,
+        tx = 0, ty = 0, _tx = 0, _ty = 0,
+        active = false, select = true, draging = false
+    })
+    local w, h = love.graphics.getDimensions()
+    local cw, ch = w / 2, h / 2
+    for index, value in ipairs(self.nodes) do 
+        value._x, value._y = cw, ch
+    end
+end
+
 function list:draw(w, h)
     local r, g, b, a = love.graphics.getColor()
-    local w, h = love.graphics.getDimensions()
     local f = love.graphics.getFont()
-    local cw, ch = w / 2, h / 2
     for index, value in ipairs(self.nodes) do
-        value._x, value._y = cw, ch
-        value.x, value.y = value._x, value._y
-        local color = nil
-        if value.state == "a" then
-            color = self._active_color
-        elseif value.state == "s" then
+        if not value.draging then
+            value.x, value.y = value._x, value._y
+        end
+        local color = self._default_color
+        if value.select then
             color = self._select_color
-        else
-            color = self._default_color
+        end
+        if value.active then
+            color = self._active_color
+        end
+        if value.draging then
+            color = self._drag_color
         end
         love.graphics.setColor(color[1], color[2], color[3])
-        love.graphics.circle("fill", value.x, value.y, self._radius, 80)
+        love.graphics.circle("fill", value.x, value.y, self._radius, 100)
         love.graphics.setColor(1, 1, 1)
         local tw, th = f:getWidth(value.text), f:getHeight(value.text)
         value.tx, value.ty = value.x - tw / 2, value.y - th / 2
@@ -51,18 +62,28 @@ function list:draw(w, h)
 end
 
 function list:mousereleased(x, y, button, istouch, presses)
+    for index, value in ipairs(self.nodes) do
+        value.draging = false
+        value._x, value._y = value.x, value.y
+    end
 end
 
 function list:mousepressed(x, y, button, istouch, presses)
+    for index, value in ipairs(self.nodes) do
+        local d = math.sqrt((x - value.x)^2 + (y - value.y)^2)
+        if value.active then
+            value.draging = d <= self._radius
+        end
+    end
 end
 
 function list:mousemoved(x, y, dx, dy, istouch)
     for index, value in ipairs(self.nodes) do
         local d = math.sqrt((x - value.x)^2 + (y - value.y)^2)
-        if d <= self._radius then
-            value.state = "a"
-        else
-            value.state = "d"
+        value.active = d <= self._radius
+        if value.draging then
+            value.x = value.x + dx
+            value.y = value.y + dy
         end
     end
 end

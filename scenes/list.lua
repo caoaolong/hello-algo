@@ -13,6 +13,7 @@ function list_scene.draw()
     end
     UI2D.Begin( "Toolbar", 0, 0 )
     if UI2D.Button( "  Reset  " ) then
+        list_scene.widgets[1]:reset()
     end
     UI2D.SameLine()
     if UI2D.Button( "  Append  " ) then

@@ -6,6 +6,7 @@ ui2ds = require("libs.ui2ds")
 function love.load()
     imgBg = love.graphics.newImage("images/bg.png")
     love.graphics.setFont(love.graphics.newFont("ui.ttf", 34))
+    love.graphics.setDefaultFilter("linear", "linear", 1)
     -- UI2D初始化
     ui2ds.init()
     -- 加载场景
