@@ -1,4 +1,5 @@
 tb = require("utils.table")
+node = require("libs.widgets.node")
 
 array = { 
     _type = "array", _cell = 50, _space = 2,
@@ -35,23 +36,7 @@ function array:drawarray(cw, ch, f)
             value.right = true
         end
         value.x, value.y = cw + (index - 1) * (self._cell + self._space), ch
-        value._x, value._y = value.x, value.y
-        value.tx, value.ty = (self._cell - f:getWidth(value.text)) / 2 + value.x, (self._cell - f:getHeight(value.text)) / 2 + value.y
-        value._tx, value._ty = value.tx, value.ty
-        local color = nil
-        if value.state == "s" then
-            color = self._drag_color
-        elseif value.state == "a" then
-            color = self._active_color
-        elseif value.state == "p" then
-            color = self._drop_color
-        else
-            color = self._default_color
-        end
-        if value.right then
-            color = self._right_color
-        end
-        self:drawcell(color, value)
+        value:draw(f)
         ::continue::
     end
 end
@@ -59,18 +44,16 @@ end
 function array:drawdrag(f)
     if self.drag ~= nil then
         local value = self.drag
-        value.tx, value.ty = (self._cell - f:getWidth(value.text)) / 2 + value.x, (self._cell - f:getHeight(value.text)) / 2 + value.y
-        self:drawcell(self._drag_color, value)
+        value:draw(f)
     end
 end
 
-function array:drawanim()
+function array:drawanim(f)
     if self.moving then
         -- 处理动画
         local src = self.mns[1]
         local dst = self.mns[2]
         local ts = self._timer - self.timer
-        print(self.timer)
         if self.as == 1 then
             src.x = src._x
             src.tx = src._tx
@@ -120,16 +103,9 @@ function array:drawanim()
                 self.timer = self.timer - 2
             end
         end
-        self:drawcell(self._active_color, src)
-        self:drawcell(self._active_color, dst)
+        src:draw(f)
+        dst:draw(f)
     end
-end
-
-function array:drawcell(color, value)
-    love.graphics.setColor(color[1], color[2], color[3])
-    love.graphics.rectangle("fill", value.x, value.y, self._cell, self._cell)
-    love.graphics.setColor(1, 1, 1)
-    love.graphics.print(value.text, value.tx, value.ty)
 end
 
 function array:drawtooltip(w, h, f)
@@ -167,7 +143,7 @@ function array:draw(w, h)
     -- 显示数组元素
     self:drawarray(cw, ch, f)
     -- 显示移动中的节点
-    self:drawanim()
+    self:drawanim(f)
     -- 显示选择的节点
     self:drawdrag(f)
     -- 显示提示信息
@@ -187,10 +163,7 @@ function array:reset()
         if tw > self._cell then
             text = "..."
         end
-        table.insert(self.nodes, {
-            x = 0, y = 0, tx = 0, ty = 0, _x = 0, _y = 0, _tx = 0, _ty = 0,
-            text = text, value = value, state = "d", right = false
-        })
+        table.insert(self.nodes, node:new("rect", self._cell, self._cell, value, text))
     end
 end
 
@@ -231,10 +204,7 @@ function array:create()
             text = "..."
         end
         table.insert(values, value)
-        table.insert(self.nodes, {
-            x = 0, y = 0, tx = 0, ty = 0,
-            text = text, value = value, state = "d", right = false
-        })
+        table.insert(self.nodes, node:new("rect", self._cell, self._cell, value, text))
     end
     self.defaults = values
 end
@@ -244,16 +214,16 @@ function array:mousemoved(x, y, dx, dy, istouch)
     love.graphics.setColor(1, 1, 1)
     self.tooltip = nil
     for index, value in ipairs(self.nodes) do
-        if x >= value.x and x <= value.x + self._cell and y >= value.y and y <= value.y + self._cell then
+        if value:isTouch(x, y) then
             if self.drag ~= nil and value ~= self.drag then
-                value.state = "p"
+                value:drop()
                 self.drop = value
-            elseif value.state == "d" then
-                value.state = "a"
+            else
+                value:active()
             end
             self.tooltip = string.format("Index=%d,Value=%d", index - 1, value.value)
-        elseif value.state ~= "r" then
-            value.state = "d"
+        else
+            value:inactive()
         end
     end
     if self.drag ~= nil then
@@ -266,8 +236,8 @@ end
 
 function array:mousepressed(x, y, button, istouch, presses)
     for index, value in ipairs(self.nodes) do
-        if x >= value.x and x <= value.x + self._cell and y >= value.y and y <= value.y + self._cell then
-            value.state = "s"
+        if value:isTouch(x, y) then
+            value:drag()
             self.drag = value
         end
     end
@@ -304,12 +274,11 @@ function array:mousereleased(x, y, button, istouch, presses)
         table.insert(self.mns, self.drag)
         table.insert(self.mns, self.drop)
         self:swap()
-        self.drag.state = "d"
+        self.drag:default()
         self.drag = nil
-        self.drop.state = "d"
+        self.drop:default()
         self.drop = nil
     elseif self.drag ~= nil and self.drop == nil then
-        self.drag.state = "d"
         self.drag = nil
     end
 end

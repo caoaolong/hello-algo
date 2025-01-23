@@ -10,7 +10,7 @@ function love.load()
     -- UI2D初始化
     ui2ds.init()
     -- 加载场景
-    scene.start("ui2d_list")
+    scene.start("ui2d_array")
 end
 
 function love.resize(w, h)
