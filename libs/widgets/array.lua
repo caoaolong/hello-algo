@@ -31,9 +31,14 @@ function array:drawarray(cw, ch, f)
         end
         if index > 1 then
             local last = self.nodes[index - 1]
-            value.right = self:compare(last, value) and last.right
+            local r = self:compare(last, value)
+            if r and last._right then
+                value:correct()
+            else
+                value:wrong()
+            end
         else
-            value.right = true
+            value:correct()
         end
         value.x, value.y = cw + (index - 1) * (self._cell + self._space), ch
         value:draw(f)
@@ -45,66 +50,6 @@ function array:drawdrag(f)
     if self.drag ~= nil then
         local value = self.drag
         value:draw(f)
-    end
-end
-
-function array:drawanim(f)
-    if self.moving then
-        -- 处理动画
-        local src = self.mns[1]
-        local dst = self.mns[2]
-        local ts = self._timer - self.timer
-        if self.as == 1 then
-            src.x = src._x
-            src.tx = src._tx
-            src.y = src._y + (self._cell / self._timer * ts)
-            src.ty = src._ty + (self._cell / self._timer * ts)
-            dst.x = dst._x
-            dst.tx = dst._tx
-            dst.y = dst._y - (self._cell / self._timer * ts)
-            dst.ty = dst._ty - (self._cell / self._timer * ts)
-            if self.timer <= 0 then
-                src._y, dst._y = src.y, dst.y
-                src._ty, dst._ty = src.ty, dst.ty
-                self.as = 2
-                self.timer = self._timer
-            else
-                self.timer = self.timer - 2
-            end
-        elseif self.as == 2 then
-            src.x = src._x + ((dst._x - src._x) / self._timer * ts)
-            src.tx = src._tx + ((dst._tx - src._tx) / self._timer * ts)
-            dst.x = dst._x + ((src._x - dst._x) / self._timer * ts)
-            dst.tx = dst._tx + ((src._tx - dst._tx) / self._timer * ts)
-            if self.timer <= 0 then
-                dst._x, src._x = src._x, dst._x
-                dst._tx, src._tx = src._tx, dst._tx
-                self.as = 3
-                self.timer = self._timer
-            else
-                self.timer = self.timer - 1
-            end
-        elseif self.as == 3 then
-            src.x = src._x
-            src.tx = src._tx
-            src.y = src._y - (self._cell / self._timer * ts)
-            src.ty = src._ty - (self._cell / self._timer * ts)
-            dst.x = dst._x
-            dst.tx = dst._tx
-            dst.y = dst._y + (self._cell / self._timer * ts)
-            dst.ty = dst._ty + (self._cell / self._timer * ts)
-            if self.timer <= 0 then
-                self.as = 1
-                self:doswap()
-                self.moving = false
-                self.timer = self._timer
-                self.mns = {}
-            else
-                self.timer = self.timer - 2
-            end
-        end
-        src:draw(f)
-        dst:draw(f)
     end
 end
 
@@ -142,8 +87,6 @@ function array:draw(w, h)
 
     -- 显示数组元素
     self:drawarray(cw, ch, f)
-    -- 显示移动中的节点
-    self:drawanim(f)
     -- 显示选择的节点
     self:drawdrag(f)
     -- 显示提示信息
@@ -210,74 +153,52 @@ function array:create()
 end
 
 function array:mousemoved(x, y, dx, dy, istouch)
-    local r, g, b, a = love.graphics.getColor()
-    love.graphics.setColor(1, 1, 1)
     self.tooltip = nil
     for index, value in ipairs(self.nodes) do
-        if value:isTouch(x, y) then
-            if self.drag ~= nil and value ~= self.drag then
-                value:drop()
-                self.drop = value
-            else
-                value:active()
-            end
+        if value:mousemoved(self, index, x, y, dx, dy) then
             self.tooltip = string.format("Index=%d,Value=%d", index - 1, value.value)
-        else
-            value:inactive()
         end
     end
-    if self.drag ~= nil then
-        local value = self.drag
-        value.x = value.x + dx
-        value.y = value.y + dy
-    end
-    love.graphics.setColor(r, g, b, a)
 end
 
 function array:mousepressed(x, y, button, istouch, presses)
     for index, value in ipairs(self.nodes) do
-        if value:isTouch(x, y) then
-            value:drag()
-            self.drag = value
-        end
+        self.drag = self.drag or value:mousepressed(x, y)
     end
-end
-
-function array:doswap()
-    local dragIndex, dropIndex = 0, 0
-    print(self.nodes)
-    for index, value in ipairs(self.nodes) do
-        if value == self.mns[1] then
-            dragIndex = index
-        end
-        if value == self.mns[2] then
-            dropIndex = index
-        end
-    end
-    local lsz = #self.logs
-    table.insert(self.logs, string.format("| Swap | %10d → [%3d] | %10d → [%3d] |", 
-        self.nodes[dragIndex].value, dragIndex - 1, self.nodes[dropIndex].value, dropIndex - 1))
-    if #self.logs > 15 then
-        table.remove(self.logs, 2)
-    end
-    self.nodes[dragIndex], self.nodes[dropIndex] = self.nodes[dropIndex], self.nodes[dragIndex]
 end
 
 function array:swap()
-    self.moving = true
-    self._timer = math.floor(math.abs(self.drag._x - self.drop._x) / 4)
-    self.timer = self._timer
-end
-
-function array:mousereleased(x, y, button, istouch, presses)
-    if self.drag ~= nil and self.drop ~= nil then
-        table.insert(self.mns, self.drag)
-        table.insert(self.mns, self.drop)
-        self:swap()
+    local dragIndex, dropIndex = 0, 0
+    for index, value in ipairs(self.nodes) do
+        if value == self.drag then
+            dragIndex = index
+        end
+        if value == self.drop then
+            dropIndex = index
+        end
+    end
+    if dragIndex > 0 and dropIndex > 0 then
+        local lsz = #self.logs
+        table.insert(self.logs, string.format("| Swap | %10d → [%3d] | %10d → [%3d] |", 
+            self.nodes[dragIndex].value, dragIndex - 1, self.nodes[dropIndex].value, dropIndex - 1))
+        if #self.logs > 15 then
+            table.remove(self.logs, 2)
+        end
+        self.nodes[dragIndex], self.nodes[dropIndex] = self.nodes[dropIndex], self.nodes[dragIndex]
         self.drag:default()
         self.drag = nil
         self.drop:default()
         self.drop = nil
+    end
+end
+
+function array:mousereleased(x, y, button, istouch, presses)
+    for index, value in ipairs(self.nodes) do
+        value:mousereleased(x, y)
+    end
+
+    if self.drag ~= nil and self.drop ~= nil then
+        self:swap()
     elseif self.drag ~= nil and self.drop == nil then
         self.drag = nil
     end

@@ -6,7 +6,7 @@ node = {
     _right_color = {.6, .6, 0},
     x = 0, y = 0, tx = 0, ty = 0, _x = 0, _y = 0, _tx = 0, _ty = 0, _w = 0, _h = 0,
     _right = false, _active = false, _select = false, _drag = false, _drop = false,
-    _moving = false
+    anims = {}
 }
 node.__index = node
 
@@ -57,7 +57,7 @@ function node:correct()
 end
 
 function node:wrong()
-    self._right = true
+    self._right = false
 end
 
 function node:draw(f)
@@ -68,14 +68,14 @@ function node:draw(f)
     if self._select then
         color = self._select_color
     end
+    if self._right then
+        color = self._right_color
+    end
     if self._drag then
         color = self._drag_color
     end
     if self._drop then
         color = self._drop_color
-    end
-    if self._right then
-        color = self._right_color
     end
     love.graphics.setColor(color[1], color[2], color[3])
     if self.shape == "rect" then
@@ -97,6 +97,35 @@ end
 
 function node:isTouch(x, y)
     return x >= self.x and x <= self.x + self._w and y >= self.y and y <= self.y + self._h
+end
+
+function node:mousepressed(x, y)
+    if self:isTouch(x, y) then
+        self:drag()
+        return self
+    end
+    return nil
+end
+
+function node:mousemoved(parent, index, x, y, dx, dy)
+    if self._drag then
+        self.x = self.x + dx
+        self.y = self.y + dy
+        return nil
+    end
+
+    if self:isTouch(x, y) and parent.drag ~= nil and self ~= parent.drag then
+        self:drop()
+        return self
+    else
+        self._drop = false
+        return nil
+    end
+end
+
+function node:mousereleased(x, y)
+    self._drag = false
+    self._drop = false
 end
 
 function node:moveup(d)

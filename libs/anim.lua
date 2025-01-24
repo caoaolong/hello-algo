@@ -14,6 +14,7 @@ function anim:playing()
     local node = self.node
     if math.abs(node[node.attr] - node.target) <= node.step then
         node.x = target
+        self.finish = true
     else
         node.x = node.x + self.step
     end
