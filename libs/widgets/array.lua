@@ -64,7 +64,7 @@ end
 function array:drawlogs(w, h, f)
     for index, value in ipairs(self.logs) do
         local lw, lh = f:getWidth(value), f:getHeight(value)
-        local ly = (h - lh) * 0.5
+        local ly = (h - lh) * 0.35
         if index == 1 then
             love.graphics.print("┌──────┬────────────────────┬────────────────────┐", (w - lw) / 2, ly + (index - 3) * lh)
             love.graphics.print("│ Opt  │       From         │         To         │", (w - lw) / 2, ly + (index - 2) * lh)
@@ -181,7 +181,7 @@ function array:swap()
         local lsz = #self.logs
         table.insert(self.logs, string.format("| Swap | %10d → [%3d] | %10d → [%3d] |", 
             self.nodes[dragIndex].value, dragIndex - 1, self.nodes[dropIndex].value, dropIndex - 1))
-        if #self.logs > 15 then
+        if #self.logs > 12 then
             table.remove(self.logs, 2)
         end
         self.nodes[dragIndex], self.nodes[dropIndex] = self.nodes[dropIndex], self.nodes[dragIndex]
@@ -194,9 +194,8 @@ end
 
 function array:mousereleased(x, y, button, istouch, presses)
     for index, value in ipairs(self.nodes) do
-        value:mousereleased(x, y)
+        value:mousereleased(self, x, y)
     end
-
     if self.drag ~= nil and self.drop ~= nil then
         self:swap()
     elseif self.drag ~= nil and self.drop == nil then

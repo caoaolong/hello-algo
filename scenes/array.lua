@@ -19,7 +19,7 @@ function array_scene.draw()
     if UI2D.RadioButton("DESC", array_scene.order == "gt", "Descending") then
         array_scene.order = "gt"
     end
-    local value = UI2D.SliderInt("Count", array_scene.size, 2, 10, 0, "Array Size")
+    local value = UI2D.SliderInt("Count", array_scene.size, 2, 15, 0, "Array Size")
     if value ~= array_scene.size then
         array_scene.size = value
         array_scene.widgets[1]:resize(value)

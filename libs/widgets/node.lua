@@ -111,21 +111,23 @@ function node:mousemoved(parent, index, x, y, dx, dy)
     if self._drag then
         self.x = self.x + dx
         self.y = self.y + dy
-        return nil
     end
 
     if self:isTouch(x, y) and parent.drag ~= nil and self ~= parent.drag then
         self:drop()
-        return self
+        return true
     else
         self._drop = false
-        return nil
     end
+    return false
 end
 
-function node:mousereleased(x, y)
+function node:mousereleased(parent, x, y)
     self._drag = false
     self._drop = false
+    if self:isTouch(x, y) and self ~= parent.drag then
+        parent.drop = self
+    end
 end
 
 function node:moveup(d)
